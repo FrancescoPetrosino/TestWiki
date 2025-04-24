@@ -43,7 +43,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const commitsUrl = ${{steps.pr_details.outputs.commits_url}};
+            const commitsUrl = `${{steps.pr_details.outputs.commits_url}}`;
             if (!commitsUrl) throw new Error('No commits URL provided');
             const commits = await fetch(commitsUrl, {
               headers: { Authorization: `token $GITHUB_TOKEN` }
