@@ -14,6 +14,10 @@ jobs:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
+      - name: Esegui script con GITHUB_TOKEN
+        run: |
+          echo "Il token è: ${process.env.GITHUB_TOKEN}"
+
       # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -28,6 +32,8 @@ jobs:
             core.setOutput("title", pullRequest.title);
             core.setOutput("body", pullRequest.body);
             core.setOutput("commits_url", pullRequest.commits_url);
+            console.log(`Pull Request Title: ${pullRequest.title}`);
+            console.log(`Pull Request Body: ${pullRequest.body}`);
 
       # Step 3: Fetch commit details
       - name: Fetch commit details
@@ -35,7 +41,8 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const commitsUrl = steps.pr_details.outputs.commits_url;
+            const commitsUrl = ${steps.pr_details.outputs.commits_url};
+            if (!commitsUrl) throw new Error('No commits URL provided');
             const commits = await fetch(commitsUrl, {
               headers: { Authorization: `token ${process.env.GITHUB_TOKEN}` }
             }).then(res => res.json());
