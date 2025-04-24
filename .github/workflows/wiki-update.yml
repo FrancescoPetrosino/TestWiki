@@ -14,35 +14,35 @@ jobs:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout del repository
+      # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Recupera i dettagli della pull request
+      # Step 2: Get pull request details
       - name: Get pull request details
         id: pr_details
         uses: actions/github-script@v6
         with:
           script: |
             const pullRequest = context.payload.pull_request;
-            return {
-              title: pullRequest.title,
-              body: pullRequest.body,
-              commits_url: pullRequest.commits_url
-            };
+            core.setOutput("title", pullRequest.title);
+            core.setOutput("body", pullRequest.body);
+            core.setOutput("commits_url", pullRequest.commits_url);
 
-      # Step 3: Recupera i dettagli dei commit
+      # Step 3: Fetch commit details
       - name: Fetch commit details
         id: fetch_commits
         uses: actions/github-script@v6
         with:
           script: |
-            const commits = await fetch(`${steps.pr_details.outputs.commits_url}`, {
+            const commitsUrl = steps.pr_details.outputs.commits_url;
+            const commits = await fetch(commitsUrl, {
               headers: { Authorization: `token ${process.env.GITHUB_TOKEN}` }
             }).then(res => res.json());
-            return commits.map(c => `- ${c.commit.message}`).join('\n');
+            const formattedCommits = commits.map(c => `- ${c.commit.message}`).join('\n');
+            core.setOutput("commits", formattedCommits);
 
-      # Step 4: Crea una pagina Wiki
+      # Step 4: Create Wiki Page
       - name: Create Wiki Page
         uses: actions/github-script@v6
         with:
@@ -50,13 +50,13 @@ jobs:
             const wikiContent = `
             ## ${steps.pr_details.outputs.title}
 
-            ### Descrizione
+            ### Description
             ${steps.pr_details.outputs.body}
 
-            ### Commit
-            ${steps.fetch_commits.outputs}
+            ### Commits
+            ${steps.fetch_commits.outputs.commits}
             `;
-            const response = await fetch('https://api.github.com/repos/${context.repo.owner}/${context.repo.repo}/wiki', {
+            const response = await fetch(`https://api.github.com/repos/${context.repo.owner}/${context.repo.repo}/wiki`, {
               method: 'POST',
               headers: {
                 Authorization: `token ${process.env.GITHUB_TOKEN}`,
@@ -70,7 +70,7 @@ jobs:
             if (!response.ok) throw new Error('Failed to create wiki page');
             return response.json();
 
-      # Step 5: Aggiungi un commento alla pull request
+      # Step 5: Add a comment to the pull request
       - name: Comment on Pull Request
         uses: actions/github-script@v6
         with:
@@ -78,5 +78,5 @@ jobs:
             const wikiLink = `https://github.com/${context.repo.owner}/${context.repo.repo}/wiki/${steps.pr_details.outputs.title.replace(/ /g, '-')}`;
             github.issues.createComment({
               issue_number: context.issue.number,
-              body: `✅ La pagina Wiki è stata creata: [${steps.pr_details.outputs.title}](${wikiLink})`
+              body: `✅ The Wiki page has been created: [${steps.pr_details.outputs.title}](${wikiLink})`
             });
