@@ -34,8 +34,8 @@ jobs:
             core.setOutput("title", pullRequest.title);
             core.setOutput("body", pullRequest.body);
             core.setOutput("commits_url", pullRequest.commits_url);
-            console.log(`Pull Request Title: ${{pullRequest.title}}`);
-            console.log(`Pull Request Body: ${{pullRequest.body}}`);
+            console.log(`Pull Request Title: ${pullRequest.title}`);
+            console.log(`Pull Request Body: ${pullRequest.body}`);
 
       # Step 3: Fetch commit details
       - name: Fetch commit details
