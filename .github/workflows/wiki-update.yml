@@ -45,11 +45,11 @@ jobs:
           script: |
             const commitsUrl = `${{steps.pr_details.outputs.commits_url}}`;
             if (!commitsUrl) throw new Error('No commits URL provided');
-            const commits = await fetch(commitsUrl, {
+            await fetch(commitsUrl, {
               headers: { Authorization: `token $GITHUB_TOKEN` }
-            }).then(res => res.json());
-            const formattedCommits = commits.map(c => `- ${c.commit.message}`).join('\n');
-            core.setOutput("commits", formattedCommits);
+            }).then(res => {
+              core.setOutput("commits", res.json().map(c => `- ${c.commit.message}`).join('\n'));
+            });
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
