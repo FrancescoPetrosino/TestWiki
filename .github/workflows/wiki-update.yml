@@ -4,14 +4,17 @@ on:
   pull_request:
     types:
       - closed
+    branches:
+      - main
 
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
   create-wiki-page:
-    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.labels.* == 'wiki' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Esegui script con GITHUB_TOKEN
