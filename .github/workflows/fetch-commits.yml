@@ -18,22 +18,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           script: |
-            const pippo = require('@actions/github');
-            const paperino = pippo.getOctokit($GITHUB_TOKEN);
-
-            // Fetch the latest commits in the repository
-            const commits = await paperino.rest.repos.listCommits({
-              owner: pippo.context.repo.owner,
-              repo: pippo.context.repo.repo
-            });
-
-            // Log and store commit details
-            console.log('Commits:', commits.data);
-            return commits.data.map(commit => ({
-              message: commit.commit.message,
-              author: commit.commit.author.name,
-              url: commit.html_url
-            }));
+           const commits = await github.rest.repos.listCommits({
+             owner: context.repo.owner,
+             repo: context.repo.repo
+           });
+         
+           console.log('Commits:', commits.data);
+           return commits.data.map(commit => ({
+             message: commit.commit.message,
+             author: commit.commit.author.name,
+             url: commit.html_url
+           }));
 
       - name: Output commit details
         run: |
