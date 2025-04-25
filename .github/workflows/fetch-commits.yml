@@ -18,23 +18,40 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           script: |
-           const commits = await github.rest.repos.listCommits({
-             owner: context.repo.owner,
-             repo: context.repo.repo
-           });
-         
-           console.log('Commits:', commits.data);
-           return commits.data.map(commit => ({
-             message: commit.commit.message,
-             author: commit.commit.author.name,
-             url: commit.html_url
-           }));
+            const commits = await github.rest.repos.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+
+            const commit_details = commits.data.map(c => ({
+              message: c.commit.message,
+              author_name: c.commit.author.name,
+              author_email: c.commit.author.email,
+              author_avatar: c.author.avatar_url,
+              url: c.html_url,
+              date: c.commit.author.date,
+              sha: c.sha,
+              commit_url: c.url
+            }));
+
+            console.log('Commits:', commits);
+
+            core.setOutput('commit_details', commit_details);
 
       - name: Output commit details
         run: |
           echo "The last 10 commits are:"
-          echo "${{ env.commit_details }}"
+          for (let i = 0; i < commit_details.length; i++) {
+            console.log(`Commit ${i + 1}:`);
+            console.log(`Message: ${commit_details[i].message}`);
+            console.log(`Author: ${commit_details[i].author_name} <${commit_details[i].author_email}>`);
+            console.log(`Date: ${commit_details[i].date}`);
+            console.log(`SHA: ${commit_details[i].sha}`);
+            console.log(`URL: ${commit_details[i].url}`);
+            console.log(`Commit URL: ${commit_details[i].commit_url}`);
+            console.log(`Author Avatar: ${commit_details[i].author_avatar}`);
+          }
           echo "Commit details have been stored in the environment variable."
           echo "You can use it in subsequent steps or jobs."
         env:
-          commit_details: ${{ env.commit_details }}
+          commit_details: ${{ steps.fetch_commits.outputs.commit_details }}
