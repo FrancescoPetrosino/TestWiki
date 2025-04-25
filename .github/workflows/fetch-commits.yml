@@ -14,21 +14,27 @@ jobs:
       - name: Fetch commit details
         id: fetch_commits
         uses: actions/github-script@v6
+        env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           script: |
-            const commitsUrl = `https://github.com/FrancescoPetrosino/TestWiki/pull/7/commits`;
-            await fetch(commitsUrl, {
-              headers: { Authorization: `token $GITHUB_TOKEN` },
-              'Content-Type': 'application/json'
-            }).then(res => {
-              if (!res.ok) {
-                throw new Error(`HTTP error! status: ${res.status}`);
-              }
-              else {
-                console.log('Response:', res.json());
-              }
-              return res.json();
+            const { context } = require('@actions/github');
+            const octokit = require('@actions/github').getOctokit($GITHUB_TOKEN);
+      
+            // Fetch the latest commits in the repository
+            const commits = await octokit.rest.repos.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 10, // Adjust number of commits as needed
             });
+      
+            // Log and store commit details
+            console.log('Commits:', commits.data);
+            return commits.data.map(commit => ({
+              message: commit.commit.message,
+              author: commit.commit.author.name,
+              url: commit.html_url
+            }));
 
       - name: Output commit details
         run: |
