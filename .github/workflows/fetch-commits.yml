@@ -12,9 +12,9 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Fetch commit details
-        uses: actions/github-script@v4
+        id: fetch_commits
+        uses: actions/github-script@v6
         with:
-          id: fetch_commits
           script: |
             const url = `https://github.com/FrancescoPetrosino/TestWiki/pull/7/commits`;
             await fetch(commitsUrl, {
