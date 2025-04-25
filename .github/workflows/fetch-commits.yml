@@ -1,10 +1,11 @@
 name: Fetch commits
-description: Fetch commits from a repository
+
+on: [push]
 
 permissions: read-all
 
 jobs:
-  - name: fetch-commits
+  fetch-commits:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
