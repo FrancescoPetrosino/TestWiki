@@ -18,7 +18,7 @@ jobs:
           script: |
             const commitsUrl = `https://github.com/FrancescoPetrosino/TestWiki/pull/7/commits`;
             await fetch(commitsUrl, {
-              headers: { Authorization: `token $GITHUB_TOKEN` }
+              headers: { Authorization: `token $GITHUB_TOKEN` },
               'Content-Type': 'application/json'
             }).then(res => {
               if (!res.ok) {
