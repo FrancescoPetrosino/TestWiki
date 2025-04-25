@@ -5,18 +5,30 @@ on: [push]
 permissions: read-all
 
 jobs:
-  fetch-commits:
+   fetch-commits:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Fetch commit details
-        run: |
-          git fetch origin main --prune --unshallow --tags --force --progress --no-recurse-submodules --update-shallow --depth=1 --no-tags --quiet
-          git log -n 10 --pretty=format:"%h %s" origin/main
-          echo "Fetched commits from the main branch."
-          echo "commit_details=$(git log -n 10 --pretty=format:'%h %s' origin/main)" >> $GITHUB_ENV
+        with:
+          uses: actions/github-script@v4
+          id: fetch_commits
+          script: |
+            const url = `https://github.com/FrancescoPetrosino/TestWiki/pull/7/commits`;
+            await fetch(commitsUrl, {
+              headers: { Authorization: `token $GITHUB_TOKEN` }
+              'Content-Type': 'application/json'
+            }).then(res => {
+              if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+              }
+              else {
+                console.log('Response:', res.json());
+              }
+              return res.json();
+            });
 
       - name: Output commit details
         run: |
